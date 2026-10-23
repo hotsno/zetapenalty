@@ -1,5 +1,3 @@
-# Number Sprint
+# zetapenalty
 
-A fast arithmetic web game inspired by classic mental-math trainers. Incorrect answers add a **5-second penalty**.
-
-Open `index.html` directly in a browser—no build step or dependencies are required.
+[zetamac](https://arithmetic.zetamac.com/) but with a 3 second timeout if you get an answer incorrect. Press `space` or `enter` to submit your answer.

@@ -116,7 +116,7 @@ function init(options) {
     feedback.style.display = 'block';
     revealTimeout = setTimeout(() => {
       if (!finished) nextProblem();
-    }, 5000);
+    }, 3000);
   };
 
   const onKeyDown = (event) => {
