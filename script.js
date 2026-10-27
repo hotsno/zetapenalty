@@ -172,12 +172,53 @@ function readOptions(form) {
   };
 }
 
+function readOptionsFromQuery(form) {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('game') !== '1') return null;
+
+  const defaults = readOptions(form);
+  const options = { ...defaults };
+  ['add', 'sub', 'mul', 'div'].forEach((key) => {
+    if (params.has(key)) options[key] = params.get(key) === '1';
+  });
+  Object.keys(options).forEach((key) => {
+    if (['add', 'sub', 'mul', 'div'].includes(key) || !params.has(key)) return;
+    const value = Number.parseInt(params.get(key), 10);
+    if (Number.isFinite(value)) options[key] = value;
+  });
+  return options;
+}
+
+function applyOptionsToForm(form, options) {
+  Object.entries(options).forEach(([key, value]) => {
+    const field = form.elements.namedItem(key);
+    if (!field) return;
+    if (field.type === 'checkbox') field.checked = value;
+    else field.value = value;
+  });
+}
+
+function optionsToQuery(options) {
+  const params = new URLSearchParams({ game: '1' });
+  Object.entries(options).forEach(([key, value]) => {
+    params.set(key, typeof value === 'boolean' ? (value ? '1' : '0') : String(value));
+  });
+  return params.toString();
+}
+
 const form = document.getElementById('settingsForm');
-form.addEventListener('submit', (event) => {
-  event.preventDefault();
+let gameOptions = readOptionsFromQuery(form);
+if (gameOptions) {
+  applyOptionsToForm(form, gameOptions);
   document.getElementById('welcome').hidden = true;
   document.getElementById('game').hidden = false;
-  init(readOptions(form));
+  init(gameOptions);
+}
+
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+  gameOptions = readOptions(form);
+  window.location.search = `?${optionsToQuery(gameOptions)}`;
 });
 
 document.getElementById('tryAgain').addEventListener('click', (event) => {
@@ -186,12 +227,13 @@ document.getElementById('tryAgain').addEventListener('click', (event) => {
   document.getElementById('game').querySelector('.start').style.display = '';
   document.getElementById('game').querySelector('.end').style.display = 'none';
   document.getElementById('game').querySelector('.answer').disabled = false;
-  init(readOptions(form));
+  init(gameOptions || readOptions(form));
 });
 
 document.getElementById('changeSettings').addEventListener('click', (event) => {
   event.preventDefault();
   stopGame();
+  window.history.replaceState(null, '', `${window.location.pathname}${window.location.hash}`);
   document.getElementById('game').hidden = true;
   document.getElementById('welcome').hidden = false;
 });
